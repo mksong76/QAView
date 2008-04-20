@@ -1,0 +1,10 @@
+Package: qaview
+Priority: optional
+Section: qpe/application
+Maintainer: Moonkyu Song<lanterrt@hotmail.com>
+Architecture: arm
+Version: 1.1.0
+Depends: qpe-base
+Description: Text Reader.
+ - rotation, enbolding, hangul code detection.
+ - auto scroll
