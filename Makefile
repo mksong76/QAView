@@ -17,13 +17,13 @@ qaview.mak : qaview.pro
 #   making translated messages..
 $(TRANSLATE_MSGS) : %.qm : %.ts
 	@ echo "Making message $@"
-	@ lrelease $<
+	@ lrelease $< -qm $@
 $(TRANSLATE_TSS) :
 	@ lupdate qaview.pro
 
 #-----------------------------------------------------------------------------
 #   making package.
-TDIR=ipkg
+TDIR=build/ipkg
 package :
 	@ echo "Copying binary..."
 	@ mkdir -p $(TDIR)/opt/QtPalmtop/bin
