@@ -195,6 +195,9 @@ AViewConfigManager::setLastPosition(const QString &f_name, int para, int offset)
     }
   }
   m_change = true;
+
+  /* write configuration if it changed last position */
+  sync();
 }
 
 QStringList
