@@ -1,6 +1,6 @@
 #include "baseview.h"
 
-BaseView::BaseView(QWidget *parent=NULL, const char *name=NULL, WFlags f=0)
+BaseView::BaseView(QWidget *parent, const char *name, WFlags f)
     : QWidget(parent, name, f)
 {
 }

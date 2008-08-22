@@ -27,7 +27,7 @@ class ImageItem
       FAILED
     } Status;
 
-    ImageItem::ImageItem(const QString &file);
+    ImageItem(const QString &file);
 
     QString     m_filename;
     QPixmap     m_image;
