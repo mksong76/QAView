@@ -518,7 +518,7 @@ AView::updateRescentFiles()
   QString       f_name;
   int idx=0;
   for (idx=0 ; idx<lst.count() ; idx++) {
-    m_mnRescent->insertItem(lst[idx], idx);
+    m_mnRescent->insertItem(lst[idx], idx, idx);
   }
 }
 
