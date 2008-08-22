@@ -166,6 +166,8 @@ ImageView::loadImage(const QString &path, QSize &splits)
     goto failure;
   }
   free(buffer);
+  delete fd;
+  fd = NULL;
 
   splits = getProperMatrixAndSize(mat, img);
   resized = img.xForm(mat);
@@ -173,10 +175,6 @@ ImageView::loadImage(const QString &path, QSize &splits)
     splits = QSize(1,1);
     return img;
   } else {
-    /*
-    resized.detach();
-    img.resize(0,0);
-    */
     return resized;
   }
 failure:
