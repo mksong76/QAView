@@ -370,7 +370,10 @@ ZEntry::release()
     ZipFD *fd = zfd_findByRoot(getRoot());
     if (fd==NULL) return 0;
     fd->ref_count--;
-    zfd_gc();
+    if (fd->ref_count==0) {
+        zfd_gc();
+        return 0;
+    }
     return fd->ref_count;
 }
 

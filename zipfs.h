@@ -32,7 +32,14 @@ class   ZEntry
 
         virtual void printAll(int level) = 0;
 
+        /**
+         * Increase reference count.
+         * @return Resulting reference count.
+         */
         int grab();
+        /**
+         * @return Resulting reference count.
+         */
         int release();
 };
 
