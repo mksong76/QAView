@@ -157,6 +157,8 @@ AView::AView(QMainWindow *parent,const char*name, WFlags f)
   }
   updateRescentFiles();
 
+  m_keyUsedTime.setToNow();
+
   setFocusPolicy(QWidget::StrongFocus);
   this->setFocus();
 }
@@ -184,37 +186,64 @@ void
 AView::keyPressEvent(QKeyEvent *ev)
 {
   if (ev->isAutoRepeat()) return;
-  printf("AView::keyPressEvent(0x%04x)\n", ev->key());
-  switch (ev->key()) {
+  //printf("AView::keyPressEvent(0x%04x)\n", ev->key());
+  m_keyPressed = ev->key();
+  m_keyPressTime.setToNow();
+}
+
+bool
+AView::doAction(int key_code, int holding)
+{
+  bool deepPress = holding>700;
+
+  // Too fast key press need to be ignored.
+  if (m_keyUsedTime.passed()<200) {
+    m_keyUsedTime.setToNow();
+    return false;
+  }
+  m_keyUsedTime.setToNow();
+
+  switch(key_code) {
     case Qt::Key_Space:
       m_view->nextPage();
+      break;
+    case Qt::Key_Escape:
+      if (deepPress)
+        this->closeNow();
+      else
+        this->closeFile();
+      break;
+    case Qt::Key_Return:
+      if (deepPress)
+        this->showPopup();
+      else
+        this->toggleFullScreen();
       break;
     case Qt::Key_Down:
       if (!m_view->hasDocument()) {
         openFile();
       } else {
-        m_keyPressed = ev->key();
-        m_keyTime.setToNow();
+        if (deepPress)
+          m_view->setSlideShowMode(2);
+        else
+          m_view->nextPage();
       }
       break;
     case Qt::Key_Up:
       if (!m_view->hasDocument()) {
         openFile();
       } else {
-        m_keyPressed = ev->key();
-        m_keyTime.setToNow();
+        if (deepPress) {
+          showJump();
+        } else {
+          m_view->prevPage();
+        }
       }
       break;
     case Qt::Key_Right:
       m_view->rotateRight();
       break;
     case Qt::Key_Left:
-      m_view->rotateLeft();
-      break;
-    case Qt::Key_F33:
-    case Qt::Key_Return:
-      m_keyPressed = Qt::Key_Return;
-      m_keyTime.setToNow();
       break;
     case Qt::Key_O:
       openFile();
@@ -224,10 +253,6 @@ AView::keyPressEvent(QKeyEvent *ev)
       break;
     case Qt::Key_S:
       m_view->setSlideShowMode(2);
-      return;
-    case Qt::Key_Escape:
-      m_keyPressed = Qt::Key_Escape;
-      m_keyTime.setToNow();
       break;
     case Qt::Key_G:
       showJump();
@@ -236,25 +261,25 @@ AView::keyPressEvent(QKeyEvent *ev)
       showSearch();
       break;
     default:
-      ev->ignore();
-      break;
+      return false;
   }
-  m_view->setSlideShowMode(0);
+  return true;
 }
 
 void
 AView::keyReleaseEvent(QKeyEvent *ev)
 {
   if (ev->isAutoRepeat()) return;
-  printf("AView::keyReleaseEvent(0x%04x)\n", ev->key());
 
   int holding = 0;
   int p_key = ev->key();
+
+  //printf("AView::keyReleaseEvent(0x%04x)\n", ev->key());
   if (p_key==Qt::Key_F33)
     p_key = Qt::Key_Return;
 
   if (m_keyPressed==p_key) {
-    holding = m_keyTime.passed();
+    holding = m_keyPressTime.passed();
   } else {
     m_keyPressed = Qt::Key_unknown;
     ev->ignore();
@@ -262,35 +287,9 @@ AView::keyReleaseEvent(QKeyEvent *ev)
   }
   m_keyPressed = Qt::Key_unknown;
 
-  switch(p_key) {
-    case Qt::Key_Escape:
-      if (holding>500)
-        this->closeNow();
-      else
-        this->closeFile();
-      break;
-    case Qt::Key_Return:
-      if (holding>500)
-        this->showPopup();
-      else
-        this->toggleFullScreen();
-      break;
-    case Qt::Key_Down:
-      if (holding>500)
-        m_view->setSlideShowMode(2);
-      else
-        m_view->nextPage();
-      break;
-    case Qt::Key_Up:
-      if (holding>500) {
-        showJump();
-      } else {
-        m_view->prevPage();
-      }
-      break;
-    default:
-      ev->ignore();
-      break;
+  printf("AView::keyEvent(code=0x%04x,holding=%d)\n", p_key, holding);
+  if (!doAction(p_key, holding)) {
+    ev->ignore();
   }
 }
 
@@ -712,5 +711,142 @@ AView::loadPrev()
     new_file = m_flist->getFile(idx-1);
     if (new_file.isNull()) return;
     openFile(new_file, 0, 0);
+  }
+}
+
+void
+AView::viewMousePressEvent(QMouseEvent *ev)
+{
+  m_mousePressed = ev->button();
+  m_mouseMove = false;
+  m_mousePressTime.setToNow();
+  m_mx = ev->x();
+  m_my = ev->y();
+}
+
+
+int
+AView::getAreaIndex(int x, int y, int width, int height, int rotation)
+{
+  int   nx, ny, nwidth, nheight;
+  if (rotation<0) rotation = m_view->getRotation();
+  while (rotation<0) rotation += 360;
+  while (rotation>=360) rotation -= 360;
+  switch (rotation) {
+    case 0:
+      nx = x; ny = y; nwidth = width; nheight = height;
+      break;
+    case 90:
+      ny = width-x; nx = y; nwidth = height; nheight = width;
+      break;
+    case 180:
+      nx = width-x; ny = height-y; nwidth = width; nheight = height;
+      break;
+    case 270:
+      ny = x; nx = height-y; nwidth = height; nheight = width;
+      break;
+  }
+  printf("AView::getAreaIndex(nx=%d,ny=%d,nw=%d,nh=%d,rot=%d)\n",
+      nx, ny, nwidth, nheight,rotation);
+
+  int idx = 0;
+  if (ny>(nheight*1/3)) idx += 3;
+  if (ny>(nheight*2/3)) idx += 3;
+  if (nx>(nwidth*1/3)) idx += 1;
+  if (nx>(nwidth*2/3)) idx += 1;
+
+  return idx;
+}
+
+#define MOVEKEY(from,to) ((from)*9+(to))
+#define TOP_LEFT        0
+#define TOP_CENTER      1
+#define TOP_RIGHT       2
+#define MIDDLE_LEFT     3
+#define MIDDLE_CENTER   4
+#define MIDDLE_RIGHT    5
+#define BOTTOM_LEFT     6
+#define BOTTOM_CENTER   7
+#define BOTTOM_RIGHT    8
+void
+AView::viewMouseReleaseEvent(QMouseEvent *ev)
+{
+  if (m_mouseMove) {
+    m_mousePressed = 0;
+    int fidx = getAreaIndex(m_mx,m_my,m_view->width(),m_view->height());
+    int tidx = getAreaIndex(ev->x(),ev->y(),m_view->width(), m_view->height());
+    switch (MOVEKEY(fidx,tidx)) {
+      case MOVEKEY(BOTTOM_LEFT,BOTTOM_RIGHT):
+      case MOVEKEY(BOTTOM_RIGHT,TOP_RIGHT):
+      case MOVEKEY(TOP_RIGHT,TOP_LEFT):
+      case MOVEKEY(TOP_LEFT,BOTTOM_LEFT):
+        rotateLeft();
+        m_keyUsedTime.setToNow();
+        break;
+      case MOVEKEY(BOTTOM_RIGHT,BOTTOM_LEFT):
+      case MOVEKEY(TOP_RIGHT,BOTTOM_RIGHT):
+      case MOVEKEY(TOP_LEFT,TOP_RIGHT):
+      case MOVEKEY(BOTTOM_LEFT,TOP_LEFT):
+        rotateRight();
+        m_keyUsedTime.setToNow();
+        break;
+      case MOVEKEY(MIDDLE_CENTER,MIDDLE_LEFT):
+      case MOVEKEY(MIDDLE_RIGHT,MIDDLE_CENTER):
+      case MOVEKEY(MIDDLE_RIGHT,MIDDLE_LEFT):
+        loadNext();
+        m_keyUsedTime.setToNow();
+        break;
+      case MOVEKEY(MIDDLE_CENTER,MIDDLE_RIGHT):
+      case MOVEKEY(MIDDLE_LEFT,MIDDLE_CENTER):
+      case MOVEKEY(MIDDLE_LEFT,MIDDLE_RIGHT):
+        loadPrev();
+        m_keyUsedTime.setToNow();
+        break;
+      case MOVEKEY(MIDDLE_CENTER,TOP_CENTER):
+        closeFile();
+        m_keyUsedTime.setToNow();
+        break;
+      case MOVEKEY(MIDDLE_CENTER,BOTTOM_CENTER):
+        openFile();
+        m_keyUsedTime.setToNow();
+        break;
+      case MOVEKEY(BOTTOM_CENTER,TOP_CENTER):
+        closeNow();
+        break;
+    }
+    return;
+  }
+
+  int holding = m_mousePressTime.passed();
+  printf("AView::click!!! (%d,%d) holding=%d\n", ev->x(), ev->y(), holding);
+
+  switch (getAreaIndex(ev->x(), ev->y(), m_view->width(), m_view->height())) {
+    case MIDDLE_CENTER: // center
+      doAction(QKeyEvent::Key_Return, holding);
+      break;
+    case TOP_LEFT:
+    case TOP_CENTER:
+    case TOP_RIGHT:
+      doAction(QKeyEvent::Key_Up, holding);
+      break;
+    case BOTTOM_LEFT:
+    case BOTTOM_CENTER:
+    case BOTTOM_RIGHT:
+      doAction(QKeyEvent::Key_Down, holding);
+      break;
+  }
+}
+
+void
+AView::viewMouseMoveEvent(QMouseEvent *ev)
+{
+  int   dx, dy, dist;
+  if (m_mousePressed==0) return;
+  dx = m_mx-ev->x();
+  dy = m_my-ev->y();
+  dist = (int)(sqrt(dx*dx+dy*dy)+0.5f);
+  if (dist > 16) {
+    //printf("AView::moved to far %d\n", dist);
+    m_mouseMove = true;
   }
 }

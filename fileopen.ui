@@ -58,6 +58,32 @@
                     <class>QPushButton</class>
                     <property stdset="1">
                         <name>name</name>
+                        <cstring>m_btnParent</cstring>
+                    </property>
+                    <property stdset="1">
+                        <name>maximumSize</name>
+                        <size>
+                            <width>38</width>
+                            <height>38</height>
+                        </size>
+                    </property>
+                    <property stdset="1">
+                        <name>text</name>
+                        <string></string>
+                    </property>
+                    <property stdset="1">
+                        <name>autoResize</name>
+                        <bool>true</bool>
+                    </property>
+                    <property stdset="1">
+                        <name>flat</name>
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget>
+                    <class>QPushButton</class>
+                    <property stdset="1">
+                        <name>name</name>
                         <cstring>m_btnReload</cstring>
                     </property>
                     <property stdset="1">

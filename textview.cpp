@@ -641,3 +641,26 @@ TextView::canSearch()
   return true;
 }
 
+void
+TextView::mousePressEvent(QMouseEvent *ev)
+{
+  ((AView*)parent())->viewMousePressEvent(ev);
+}
+
+void
+TextView::mouseReleaseEvent(QMouseEvent *ev)
+{
+  ((AView*)parent())->viewMouseReleaseEvent(ev);
+}
+
+void
+TextView::mouseMoveEvent(QMouseEvent *ev)
+{
+  ((AView*)parent())->viewMouseMoveEvent(ev);
+}
+
+int
+TextView::getRotation()
+{
+  return m_rotation;
+}

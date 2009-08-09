@@ -46,6 +46,7 @@ enum {
   ACFG_ScrollPolicy,
   ACFG_PagingPolicy,
   ACFG_ScaleUp,
+  ACFG_HoldDelay,
   ACFG_Reserved
 };
 

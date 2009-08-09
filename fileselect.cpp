@@ -30,6 +30,7 @@ FileSelect::FileSelect( QWidget* parent,  const char* name, WFlags fl )
     connect(m_btnOpen, SIGNAL(pressed()), this, SLOT(openFile()));
     connect(m_btnReload, SIGNAL(pressed()), this, SLOT(openDirectory()));
     connect(m_btnClose, SIGNAL(pressed()), this, SIGNAL(endOpenFile()));
+    connect(m_btnParent, SIGNAL(pressed()), this, SLOT(cdUp()));
     connect(m_tPathName, SIGNAL(activated(int)), this, SLOT(openDirectory()));
 
     connect(m_wFileList, SIGNAL(doubleClicked(QListViewItem*)),
@@ -40,10 +41,11 @@ FileSelect::FileSelect( QWidget* parent,  const char* name, WFlags fl )
     m_btnClose->setIconSet(Resource::loadPixmap("qaview/fileclose"));
     m_btnReload->setIconSet(Resource::loadPixmap("qaview/reload"));
     m_btnOpen->setIconSet(Resource::loadPixmap("qaview/fileopen"));
+    m_btnParent->setIconSet(Resource::loadPixmap("qaview/up"));
     m_btnReload->setFixedWidth(m_btnReload->sizeHint().height());
     m_btnClose->setFixedWidth(m_btnClose->sizeHint().height());
     m_btnOpen->setFixedWidth(m_btnOpen->sizeHint().height());
-
+    m_btnParent->setFixedWidth(m_btnParent->sizeHint().height());
 
     m_dir = new QZDir(".");
 

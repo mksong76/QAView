@@ -59,6 +59,7 @@ static CfgType  configs[] = {
   { GCT_INT,    ACFG_ScrollPolicy,  "ScrollPolicy",     "3"         },
   { GCT_INT,    ACFG_PagingPolicy,  "PagingPolicy",     "3"         },
   { GCT_BOOL,   ACFG_ScaleUp,       "ScaleUp",          "0"         },
+  { GCT_BOOL,   ACFG_HoldDelay,     "HoldDelay",        "500"       },
   { GCT_END, -1, NULL, NULL }
 };
 
