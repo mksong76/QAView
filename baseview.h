@@ -37,6 +37,7 @@ class   BaseView : public QWidget
     virtual void prevPage() = 0;
     virtual void rotateRight() = 0;
     virtual void rotateLeft() = 0;
+    virtual int getRotation() { return 0; };
   signals:
     void loadNext();
     void loadPrev();

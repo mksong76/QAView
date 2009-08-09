@@ -59,6 +59,12 @@ class   TextView : public BaseView
     void rotateRight();
     void rotateLeft();
 
+    int getRotation();
+
+    void mousePressEvent(QMouseEvent *ev);
+    void mouseReleaseEvent(QMouseEvent *ev);
+    void mouseMoveEvent(QMouseEvent *ev);
+
     TextView(QWidget *parent=NULL, const char *name=NULL, WFlags f=0);
   private:
     Formatter   m_fmt;

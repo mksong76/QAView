@@ -57,6 +57,9 @@ class ImageView : public BaseView
     bool event(QEvent *ev);
     void paintEvent(QPaintEvent *ev);
     void resizeEvent(QResizeEvent *ev);
+    void mousePressEvent(QMouseEvent *ev);
+    void mouseReleaseEvent(QMouseEvent *ev);
+    void mouseMoveEvent(QMouseEvent *ev);
 
     void resetResized();
     void setImage(const QPixmap &img, const QSize &splits);

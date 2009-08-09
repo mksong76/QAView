@@ -5,12 +5,14 @@
 #include <qwidget.h>
 #include "imageview.h"
 #include "qzfile.h"
+#include <unistd.h>
 #include <malloc.h>
 #include <qpainter.h>
 #include <qapplication.h>
 #include "userevent.h"
 #include "filelister.h"
 #include "aconfig.h"
+#include "aview.h"
 
 
 #ifndef IV_MAX_QUEUE_SIZE
@@ -374,6 +376,11 @@ ImageView::upSlice()
 void
 ImageView::nextPage()
 {
+  int xoff, yoff, xsl, ysl;
+  xoff = m_xoffset;
+  yoff = m_yoffset;
+  xsl = m_xslice;
+  ysl = m_yslice;
   switch (m_scrollMode) {
     case IVPM_DOWN_RIGHT:
       if (scrollDown() || scrollRight()) return;
@@ -402,6 +409,10 @@ ImageView::nextPage()
       if (downSlice() || leftSlice()) return;
       break;
   }
+  m_xoffset = xoff;
+  m_yoffset = yoff;
+  m_xslice = xsl;
+  m_yslice = ysl;
   emit loadNext();
 }
 
@@ -585,6 +596,7 @@ ImageView::backgroundLoaderLoop()
       QPixmap   px;
       QSize     splits;
       px = loadImage(fname, splits);
+      printf("ImageView::backgroundLoaderLoop : DONE\n");
       m_bgLock.lock();
       QApplication::postEvent(this, new UEImageReady(fname, px, splits));
     } else if (m_cmd==IVLC_NONE){
@@ -769,4 +781,22 @@ void
 ImageView::setFileLister(FileLister *flist)
 {
   m_flist = flist;
+}
+
+void
+ImageView::mousePressEvent(QMouseEvent *ev)
+{
+  ((AView*)parent())->viewMousePressEvent(ev);
+}
+
+void
+ImageView::mouseReleaseEvent(QMouseEvent *ev)
+{
+  ((AView*)parent())->viewMouseReleaseEvent(ev);
+}
+
+void
+ImageView::mouseMoveEvent(QMouseEvent *ev)
+{
+  ((AView*)parent())->viewMouseMoveEvent(ev);
 }
