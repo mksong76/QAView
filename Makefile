@@ -54,4 +54,6 @@ T_DZFILE_HDR	= dzfile.h
 t_dzfile : $(T_DZFILE_SRC) $(T_DZFILE_HDR)
 	$(CXX) $(CXXFLAGS) $(LFLAGS) $(LIBS) $(T_DZFILE_SRC) -o $@ \
 	  -DTEST_DEBUG
-	
+
+%-test : %-test.cpp
+	$(CXX) $(CXXFLAGS) $(INCPATH) $(LFLAGS) $(LIBS) $@.cpp -o $@
