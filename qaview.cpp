@@ -217,7 +217,7 @@ main(int argc, char **argv)
   }
 
   /* creating main window */
-  AView       w(NULL, "main_window");
+  AView w(NULL, "main_window");
   a.setStylusOperation(&w, QPEApplication::RightOnHold);
   a.showMainWidget(&w);
 

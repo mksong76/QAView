@@ -21,7 +21,7 @@ AViewConfigManager::getInstance()
   return g_cfg;
 }
 
-#define CONFIG_NAME     "QAView"
+#define CONFIG_NAME     "QAView2"
 
 static CfgType  configs[] = {
   { GCT_GROUP,  -1,                 "Global",           NULL        },

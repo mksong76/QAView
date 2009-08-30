@@ -199,6 +199,7 @@ void
 Formatter::updateLines()
 {
   if (m_ps==NULL) return;
+  if (m_width==0) return;
 
 #if 0
   printf("WIDTH:%d HEIGHT:%d\nPARAGRAPH:%d,%d\n",

@@ -1,13 +1,5 @@
-/**
- * AView MainWindow class.
- * 
- * It will process various request from viewer. Handling dialog and options.
- * 
- * @file aview.h
- * vim:sw=2:sts=2:et
- */
-#ifndef __A_VIEW_H__
-#define __A_VIEW_H__
+#ifndef __AVIEW_H__
+#define __AVIEW_H__
 
 #include <qmainwindow.h>
 #include <qmenubar.h>
@@ -15,7 +7,6 @@
 #include <qaction.h>
 #include <qmenubar.h>
 #include <qpopupmenu.h>
-
 #include "timestamp.h"
 
 class   QZFile;
@@ -25,8 +16,8 @@ class   OptionDlg;
 class   GenConfig;
 class   AskDialog;
 class   BaseView;
-class   TextView;
-class   ImageView;
+class   View;
+class   Document;
 class   FileLister;
 
 enum {
@@ -39,11 +30,6 @@ class AView : public QMainWindow
 {
   Q_OBJECT
   private:
-    BaseView    *m_view;
-    ImageView   *m_iview;
-    TextView    *m_tview;
-    int         m_mode;
-
     FileSelect  *m_browser;
     OptionDlg   *m_optiondlg;
     AskDialog   *m_wAsk;
@@ -76,6 +62,12 @@ class AView : public QMainWindow
     bool        m_fullScreen, m_fullBeforeDialog;
     int         m_tbHeight;
 
+    int         m_mode;
+    Document    *m_doc;
+    Document    *m_textdoc;
+    Document    *m_imagedoc;
+    View        *m_view;
+
   private:
     bool doAction(int key, int holding);
 
@@ -86,9 +78,10 @@ class AView : public QMainWindow
 
     void showScreen(bool isFull);
     void updateViewSize();
-    void showView();
     int getAreaIndex(int x, int y, int width, int height,
             int rotation=-1);
+    void setDocument(Document *doc);
+
   public slots:
     void openFile();
     void closeFile();
@@ -99,6 +92,8 @@ class AView : public QMainWindow
     void openFile(QString name, int parser_id, int encoding_id);
     void loadPrev();
     void loadNext();
+    void nextPage();
+    void prevPage();
     void toggleFullScreen();
     void updateRescentFiles();
     void rescentSelected(int id);
