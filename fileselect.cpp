@@ -144,6 +144,42 @@ FileSelect::keyReleaseEvent(QKeyEvent *ev)
   }
 }
 
+FILE_TYPE
+FileSelect::getFileType()
+{
+  switch (m_wParser->currentItem()) {
+    case 0:
+      return FT_AUTO;
+    case 1:
+      return FT_TEXT;
+    case 2:
+      return FT_IMAGE;
+  }
+}
+
+FILE_ENCODING
+FileSelect::getFileEncoding()
+{
+  if (m_wParser->currentItem()==1) {
+    switch (m_wEncoding->currentItem()) {
+      case 0:
+        return FE_AUTO;
+      case 1:
+        return FE_EUC_KR;
+      case 2:
+        return FE_JOHAB;
+      case 3:
+        return FE_UTF8;
+      case 4:
+        return FE_UNICODE_LE;
+      case 5:
+        return FE_UNICODE_BE;
+    }
+  } else {
+    return FE_AUTO;
+  }
+}
+
 void
 FileSelect::itemClicked(QListViewItem *item)
 {
@@ -157,7 +193,7 @@ FileSelect::itemClicked(QListViewItem *item)
       QString path;
       path = m_dir->absPath();
       path += "/" + str;
-      emit openFile(path, m_wParser->currentItem(), m_wEncoding->currentItem());
+      emit openFile(path, getFileType(), getFileEncoding());
       emit endOpenFile();
     }
   }
@@ -264,18 +300,15 @@ FileSelect::selectParser(int idx)
     case 0: /* AUTO */
       m_wEncoding->clear();
       break;
-    case 1: /* ANSI */
+    case 1: /* TEXT */
       m_wEncoding->clear();
       m_wEncoding->insertItem("AUTO");
       m_wEncoding->insertItem("EUC-KR");
       m_wEncoding->insertItem("JOHAB");
+      //m_wEncoding->insertItem("Unicode LE");
+      //m_wEncoding->insertItem("Unicode BE");
       break;
-    case 2: /* UNICODE */
-      m_wEncoding->clear();
-      m_wEncoding->insertItem("LE");
-      m_wEncoding->insertItem("BE");
-      break;
-    case 3: /* Image */
+    case 2: /* IMAGE */
       m_wEncoding->clear();
       m_wEncoding->insertItem("AUTO");
   }

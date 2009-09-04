@@ -3,12 +3,7 @@
 
 #include <qstring.h>
 #include "qzdir.h"
-
-enum {
-    FLT_UNKNOWN,
-    FLT_IMAGE,
-    FLT_TEXT
-};
+#include "filetype.h"
 
 class FileLister {
     public :
@@ -20,7 +15,7 @@ class FileLister {
         int find(const QString &fname);
         int findPath(const QString &path);
 
-        static int getType(const QString &filename);
+        static FILE_TYPE getType(const QString &filename, FILE_ENCODING &enc);
 
     private:
         QZDir       m_dir;

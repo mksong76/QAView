@@ -101,8 +101,8 @@ TextDocument::resetDocument()
 }
 
 bool
-TextDocument::setDocument(QString filename, int parser_id,
-        int encoding_id, int para, int offset)
+TextDocument::setDocument(QString filename, FILE_TYPE type_id,
+        FILE_ENCODING encoding_id, int para, int offset)
 {
     TParser   *n_ps;
     QZFile    *n_fd;
@@ -120,13 +120,14 @@ TextDocument::setDocument(QString filename, int parser_id,
         return false;
     }
 
-    switch (parser_id) {
-        case 0:
+    switch (encoding_id) {
+        case FE_EUC_KR:
+        case FE_JOHAB:
+        case FE_UTF8:
+            n_ps = TParser::getANSIParser(n_fd, encoding_id);
+            break;
         default:
             n_ps = TParser::getParser(n_fd);
-            break;
-        case 1:
-            n_ps = TParser::getANSIParser(n_fd, encoding_id);
             break;
     }
     if (NULL==n_ps) {

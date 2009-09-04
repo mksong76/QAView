@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <malloc.h>
 #include "qzfile.h"
+#include "filetype.h"
 
 OffsetDB::OffsetDB()
 {
@@ -202,7 +203,7 @@ TParser::getParser(QZFile *fd)
   }
   */
 
-  return getANSIParser(fd, 0);
+  return getANSIParser(fd, FE_AUTO);
 }
 
 TParser *
@@ -212,7 +213,7 @@ TParser::getANSIParser(QZFile *fd, int encoding_id)
 
   switch (encoding_id) {
     default:
-    case 0:
+    case FE_AUTO:
       {
         int   ks_count, kssm_count, eng_count;
         char  buffer[2048];
@@ -228,11 +229,14 @@ TParser::getANSIParser(QZFile *fd, int encoding_id)
         }
       }
       break;
-    case 1:
+    case FE_EUC_KR:
       encoding = "euc-kr";
       break;
-    case 2:
+    case FE_JOHAB:
       encoding = "johab";
+      break;
+    case FE_UTF8:
+      encoding = "utf8";
       break;
   }
   //printf("ENCODING:%s\n", encoding);

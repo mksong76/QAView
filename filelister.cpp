@@ -1,37 +1,59 @@
 #include "filelister.h"
 #include "qzdir.h"
+#include "qzfile.h"
 #include <stdio.h>
 #include <stdio.h>
 
-int
-FileLister::getType(const QString &path)
+FILE_TYPE
+FileLister::getType(const QString &path, FILE_ENCODING &enc)
 {
+    QZFile  fd(path);
+    char buf[10];
+    int readed, aword;
+    if (!fd.open()) return FT_UNKNOWN;
+    memset(buf, 0, sizeof(buf));
+    readed = fd.read(buf, 9);
+    if (readed<0) return FT_UNKNOWN;
+
+    aword = (buf[0]<<24) | (buf[1]<<16) | (buf[2]<<8) | buf[3];
+    switch (aword) {
+        case 0x89504e47:    // PNG
+        case 0xffd8ffe0:    // JPG
+        case 0x47494638:    // GIF
+            enc = FE_AUTO;
+            return FT_IMAGE;
+    }
+
     int s_idx, p_idx;
     QString suffix;
     s_idx = path.findRev('.');
     if (s_idx<0)
-        return FLT_UNKNOWN;
+        return FT_UNKNOWN;
     p_idx = path.findRev('/');
     if (p_idx>s_idx)
-        return FLT_UNKNOWN;
+        return FT_UNKNOWN;
     suffix = path.mid(s_idx).lower();
     if (suffix==".jpg" || suffix==".jpeg" ||
-            suffix==".gif" || suffix==".png")
-        return FLT_IMAGE;
-    if (suffix==".cap" || suffix==".txt")
-        return FLT_TEXT;
-    return FLT_UNKNOWN;
+            suffix==".gif" || suffix==".png") {
+        enc = FE_AUTO;
+        return FT_IMAGE;
+    }
+    if (suffix==".cap" || suffix==".txt") {
+        enc = FE_AUTO;
+        return FT_TEXT;
+    }
+    return FT_UNKNOWN;
 }
 
 FileLister::FileLister()
 {
-    m_type = FLT_UNKNOWN;
+    m_type = FT_UNKNOWN;
 }
 
 int
 FileLister::find(const QString &fname)
 {
-    if (FLT_UNKNOWN==m_type)
+    if (FT_AUTO==m_type)
         return -1;
     for (int idx=0 ; idx<m_list.count() ; idx++) {
         if (m_list[idx]==fname)
@@ -56,10 +78,11 @@ FileLister::setFile(const QString &path)
 {
     QString fname, dname;
     QZDir   dir;
-    int     new_type;
+    FILE_TYPE       new_type;
+    FILE_ENCODING   new_enc;
 
-    new_type = FileLister::getType(path);
-    if (FLT_UNKNOWN==new_type) return -1;
+    new_type = FileLister::getType(path, new_enc);
+    if (FT_UNKNOWN==new_type) return -1;
 
     dname = QZDir::getDir(path, &fname);
     if (dname==dir.path())
@@ -70,12 +93,14 @@ FileLister::setFile(const QString &path)
     QStringList flist;
     flist = dir.getList("*.*", QZFL_FILE, QZFS_NAME);
 
-    int idx = 0, fname_type, file_idx = -1;
+    int idx = 0, file_idx = -1;
+    FILE_TYPE       fname_type;
+    FILE_ENCODING   fname_enc;
     QString     fname_ptr;
     QStringList::Iterator    itr;
     itr = flist.begin();
     while (itr!=flist.end()) {
-        fname_type = FileLister::getType(dname+"/"+*itr);
+        fname_type = FileLister::getType(dname+"/"+*itr, fname_enc);
         if (fname_type==new_type) {
             itr++;
         } else {
@@ -94,7 +119,7 @@ FileLister::setFile(const QString &path)
 QString
 FileLister::getFile(int idx)
 {
-    if (m_type==FLT_UNKNOWN) {
+    if (m_type==FT_UNKNOWN) {
         printf("FileLister::getFile(%d) is UNKNOWN\n", idx);
         return NULL;
     }

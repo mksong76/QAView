@@ -23,6 +23,7 @@ class QZDir;
 
 #include "timestamp.h"
 #include "fileopen.h"
+#include "filetype.h"
 
 class FileSelect : public FileSelectForm
 {
@@ -34,20 +35,23 @@ class FileSelect : public FileSelectForm
   protected:
     QZDir       *m_dir;
 
+  private:
+    int         m_key;
+    TimeStamp   m_stamp;
+
   public:
     FileSelect( QWidget* parent = 0, const char* name = 0, WFlags fl = 0 );
     ~FileSelect();
 
     QString getDirectory();
+    FILE_TYPE getFileType();
+    FILE_ENCODING getFileEncoding();
   private:
     void keyPressEvent(QKeyEvent*ev);
     void keyReleaseEvent(QKeyEvent*ev);
 
-    int         m_key;
-    TimeStamp   m_stamp;
-
   signals:
-    void openFile(QString str, int parser_id, int encoding_id);
+    void openFile(QString str, FILE_TYPE ft, FILE_ENCODING fe);
     void endOpenFile();
 
   public slots:

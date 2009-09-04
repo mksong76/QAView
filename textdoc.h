@@ -20,8 +20,8 @@ class TextDocument : public Document
         bool hasDocument();
         bool nextPage();
         bool prevPage();
-        bool setDocument(QString filename, int parser_id,
-                int encoding_id, int para, int offset);
+        bool setDocument(QString filename, FILE_TYPE type_id,
+                FILE_ENCODING encoding_id, int para, int offset);
         bool getDocumentLocation(int &para, int &offset);
         bool getProgress(unsigned long &offset, unsigned long &all);
         void resetDocument();

@@ -1,6 +1,7 @@
 #include <qtoolbar.h>
 #include <qpe/resource.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <qpe/qpeapplication.h>
 #include <qlistview.h>
 #include <qpe/qpetoolbar.h>
@@ -16,6 +17,7 @@
 #include "document.h"
 #include "textdoc.h"
 #include "filelister.h"
+#include "filetype.h"
 
 #define     ICON_FILE_CLOSE     "qaview/fileclose"
 #define     ICON_FILE_OPEN      "qaview/fileopen"
@@ -94,7 +96,6 @@ AView::AView(QMainWindow *parent,const char*name, WFlags f)
     m_doc = NULL;
     m_textdoc = new TextDocument(m_view);
     m_imagedoc = NULL;
-    m_mode = VIEW_NONE;
     m_fullScreen = false;
     m_fullBeforeDialog = false;
 
@@ -108,8 +109,8 @@ AView::AView(QMainWindow *parent,const char*name, WFlags f)
     m_browser = new FileSelect(this, "file_select");
     m_browser->hide();
     connect(m_browser, SIGNAL(endOpenFile()), this, SLOT(closeDialog()));
-    connect(m_browser, SIGNAL(openFile(QString,int,int)),
-            this, SLOT(openFile(QString,int,int)));
+    connect(m_browser, SIGNAL(openFile(QString,FILE_TYPE,FILE_ENCODING)),
+            this, SLOT(openFile(QString,FILE_TYPE,FILE_ENCODING)));
 
     m_optiondlg = new OptionDlg(this, "option_dialog");
     m_optiondlg->hide();
@@ -370,11 +371,11 @@ AView::openDialog(QWidget *w)
 void
 AView::openFile(QString name)
 {
-    openFile(name, 0, 0);
+    openFile(name, FT_AUTO, FE_AUTO);
 }
 
 void
-AView::openFile(QString name, int parser_id, int encoding_id)
+AView::openFile(QString name, FILE_TYPE type_id, FILE_ENCODING encoding_id)
 {
     int       para, offset, old_para, old_offset;
     QString   old_filename;
@@ -397,26 +398,30 @@ AView::openFile(QString name, int parser_id, int encoding_id)
 
     g_cfg->getLastPosition(name, para, offset);
 
-    Document  *new_doc;
-    int       new_mode;
-    {
-        int new_type = FileLister::getType(name);
-        switch (new_type) {
-            default:
-                new_doc = m_textdoc;
-                break;
-            case FLT_IMAGE:
-                printf("AView::openFile() fail to open image\n");
-                break;
-            case FLT_TEXT:
-                new_doc = m_textdoc;
-                break;
-        }
+    Document  *new_doc = NULL;
+    if (type_id==FT_AUTO) {
+        type_id = FileLister::getType(name, encoding_id);
+    }
+
+    switch (type_id) {
+        case FT_IMAGE:
+            printf("AView::openFile() fail to open image\n");
+            break;
+        case FT_TEXT:
+            new_doc = m_textdoc;
+            break;
+    }
+
+    if (new_doc==NULL) {
+        my_label.setText(tr("Fail to open the file.."));
+        qApp->processEvents();
+        sleep(1);
+        return;
     }
 
     /* change to new file */
     /* TODO we should select appropriate viewer for the file. */
-    if (new_doc->setDocument(name, parser_id, encoding_id, para, offset)) {
+    if (new_doc->setDocument(name, type_id, encoding_id, para, offset)) {
         if (!old_filename.isNull()) {
             g_cfg->setLastPosition(old_filename, old_para, old_offset);
             updateRescentFiles();
@@ -675,7 +680,7 @@ AView::loadNext()
         if (idx<0) return;
         new_file = m_flist->getFile(idx+1);
         if (new_file.isNull()) return;
-        openFile(new_file, 0, 0);
+        openFile(new_file, FT_AUTO, FE_AUTO);
     }
 }
 
@@ -689,7 +694,7 @@ AView::loadPrev()
         if (idx<1) return;
         new_file = m_flist->getFile(idx-1);
         if (new_file.isNull()) return;
-        openFile(new_file, 0, 0);
+        openFile(new_file, FT_AUTO, FE_AUTO);
     }
 }
 

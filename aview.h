@@ -8,6 +8,7 @@
 #include <qmenubar.h>
 #include <qpopupmenu.h>
 #include "timestamp.h"
+#include "filetype.h"
 
 class   QZFile;
 class   TParser;
@@ -19,12 +20,6 @@ class   BaseView;
 class   View;
 class   Document;
 class   FileLister;
-
-enum {
-    VIEW_NONE,
-    VIEW_TEXT,
-    VIEW_IMAGE
-};
 
 class AView : public QMainWindow
 {
@@ -62,7 +57,6 @@ class AView : public QMainWindow
     bool        m_fullScreen, m_fullBeforeDialog;
     int         m_tbHeight;
 
-    int         m_mode;
     Document    *m_doc;
     Document    *m_textdoc;
     Document    *m_imagedoc;
@@ -89,7 +83,7 @@ class AView : public QMainWindow
     void closeDialog();
     void openDialog(QWidget *w);
     void openFile(QString name);
-    void openFile(QString name, int parser_id, int encoding_id);
+    void openFile(QString name, FILE_TYPE type_id, FILE_ENCODING encoding_id);
     void loadPrev();
     void loadNext();
     void nextPage();
